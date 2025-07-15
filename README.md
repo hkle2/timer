@@ -1,9 +1,15 @@
-# Timer v1.0
+# Timer
 
-![Version badge](https://img.shields.io/badge/Version-1.0-blue)  
+![Version badge](https://img.shields.io/badge/Version-2.0-blue)
 
-[**Timer**](https://hkle2.github.io/Timer/)
+[**Timer**](https://hkle2.github.io/timer/)
 
-Start, Stop, Reset 기능 구현된 타이머
+A simple stopwatch and timer web app
 
-새로운 기능 추가 예정
+## Version History
+
+### ver 2.0
+- Added timer functionality
+
+### ver 1.0
+- Implemented stopwatch with start, stop, and reset features

@@ -1,92 +1,258 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIMER</title>
-    <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-        #container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #timer {
-            font-size: 96px;
-            margin-bottom: 20px;
-        }
-        #buttonContainer {
-            display: flex;
-            justify-content: space-between;
-            width: 200px;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            margin: 5px;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        #resetButton {
-            background-color: #4CAF50;
-        }
-        #startStopButton {
-            background-color: #f44336;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TIMER</title>
+  <style>
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: white;
+    }
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #timer {
+      font-size: 96px;
+      margin-bottom: 20px;
+      padding: 20px 40px;
+      border-radius: 16px;
+      transition: color 0.3s;
+    }
+
+    /* 깜빡이는 배경 */
+    .blink-background {
+      animation: blink-bg 1s infinite;
+      color: red;
+    }
+
+    @keyframes blink-bg {
+      0%, 100% {
+        background-color: transparent;
+      }
+      50% {
+        background-color: rgba(255, 0, 0, 0.15);
+      }
+    }
+
+    #modeSelector {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .modeBox {
+      width: 140px;
+      border: 2px solid black;
+      background-color: white;
+      padding: 10px 15px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      border-radius: 8px;
+      transition: 0.2s ease;
+    }
+    .modeBox.active {
+      background-color: #eee;
+      font-weight: bold;
+    }
+    .modeBox img {
+      width: 32px;
+      height: 32px;
+    }
+
+    #buttonContainer {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px 30px;
+      font-size: 16px;
+      color: white;
+      border: none;
+      cursor: pointer;
+      width: 120px;
+    }
+    #resetButton {
+      background-color: #4CAF50;
+    }
+    #startStopButton {
+      background-color: #f44336;
+    }
+    #applyTimeButton {
+      background-color: white;
+      color: black;
+      border: 2px solid black;
+      border-radius: 8px;
+      cursor: pointer;
+      width: auto;
+      padding: 8px 16px;
+    }
+    #setTimeContainer {
+      display: none;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    input {
+      padding: 5px;
+      font-size: 16px;
+      width: 60px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <div id="container">
-        <div id="timer">00:00</div>
-        <div id="buttonContainer">
-            <button id="startStopButton">Start</button>
-            <button id="resetButton">Reset</button>
-        </div>
+  <div id="container">
+    <div id="modeSelector">
+      <div id="stopwatchMode" class="modeBox active">
+        <img src="https://img.icons8.com/?size=100&id=22619&format=png&color=000000" alt="스톱워치"/>
+        <span>스톱워치</span>
+      </div>
+      <div id="countdownMode" class="modeBox">
+        <img src="https://img.icons8.com/?size=100&id=16705&format=png&color=000000" alt="타이머"/>
+        <span>타이머</span>
+      </div>
     </div>
-    <script>
-        let timer;
-        let seconds = 0;
-        let isRunning = false;
+    <div id="timer">00:00</div>
+    <div id="buttonContainer">
+      <button id="startStopButton">Start</button>
+      <button id="resetButton">Reset</button>
+    </div>
+    <div id="setTimeContainer">
+      <input type="number" id="inputMinutes" placeholder="분" min="0">
+      <input type="number" id="inputSeconds" placeholder="초" min="0" max="59">
+      <button id="applyTimeButton">시간 설정</button>
+    </div>
+  </div>
 
-        function updateTimer() {
-            seconds++;
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            document.getElementById('timer').textContent = `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  <script>
+    let timer;
+    let time = 0;
+    let isRunning = false;
+    let isCountdown = false;
+
+    const timerDisplay = document.getElementById("timer");
+    const startStopButton = document.getElementById("startStopButton");
+    const resetButton = document.getElementById("resetButton");
+    const inputMinutes = document.getElementById("inputMinutes");
+    const inputSeconds = document.getElementById("inputSeconds");
+    const applyTimeButton = document.getElementById("applyTimeButton");
+    const setTimeContainer = document.getElementById("setTimeContainer");
+
+    const stopwatchMode = document.getElementById("stopwatchMode");
+    const countdownMode = document.getElementById("countdownMode");
+
+    function formatTime(t) {
+      const minutes = Math.floor(t / 60);
+      const seconds = t % 60;
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(time);
+
+      if (isCountdown && time <= 5 && time > 0) {
+        timerDisplay.classList.add("blink-background");
+      } else {
+        timerDisplay.classList.remove("blink-background");
+      }
+    }
+
+    function updateTimer() {
+      if (isCountdown) {
+        if (time > 0) {
+          time--;
+          updateDisplay();
+          if (time === 0) {
+            stopTimer();
+            alert("타이머 종료!");
+          }
         }
-        function startTimer() {
-            timer = setInterval(updateTimer, 1000);
-            isRunning = true;
-            document.getElementById('startStopButton').textContent = 'Stop';
+      } else {
+        time++;
+        updateDisplay();
+      }
+    }
+
+    function startTimer() {
+      timer = setInterval(updateTimer, 1000);
+      isRunning = true;
+      startStopButton.textContent = "Stop";
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+      isRunning = false;
+      startStopButton.textContent = "Start";
+      timerDisplay.classList.remove("blink-background");
+    }
+
+    function resetTimer() {
+      stopTimer();
+      time = 0;
+      updateDisplay();
+    }
+
+    function switchMode(toCountdown) {
+      stopTimer();
+      isCountdown = toCountdown;
+      time = 0;
+      updateDisplay();
+      setTimeContainer.style.display = isCountdown ? "flex" : "none";
+
+      if (toCountdown) {
+        countdownMode.classList.add("active");
+        stopwatchMode.classList.remove("active");
+      } else {
+        stopwatchMode.classList.add("active");
+        countdownMode.classList.remove("active");
+      }
+    }
+
+    function applyTime() {
+      const min = parseInt(inputMinutes.value) || 0;
+      const sec = parseInt(inputSeconds.value) || 0;
+      time = min * 60 + sec;
+      updateDisplay();
+      stopTimer();
+
+      inputMinutes.value = "";
+      inputSeconds.value = "";
+    }
+
+    startStopButton.addEventListener("click", () => {
+      if (isRunning) {
+        stopTimer();
+      } else {
+        if (isCountdown && time <= 0) {
+          alert("시간을 설정해주세요.");
+          return;
         }
-        function stopTimer() {
-            clearInterval(timer);
-            isRunning = false;
-            document.getElementById('startStopButton').textContent = 'Start';
-        }
-        function resetTimer() {
-            clearInterval(timer);
-            seconds = 0;
-            document.getElementById('timer').textContent = '00:00';
-            isRunning = false;
-            document.getElementById('startStopButton').textContent = 'Start';
-        }
-        document.getElementById('startStopButton').addEventListener('click', () => {
-            if (isRunning) {
-                stopTimer();
-            } else {
-                startTimer();
-            }
-        });
-        document.getElementById('resetButton').addEventListener('click', resetTimer);
-    </script>
+        startTimer();
+      }
+    });
+
+    resetButton.addEventListener("click", resetTimer);
+    applyTimeButton.addEventListener("click", applyTime);
+    stopwatchMode.addEventListener("click", () => switchMode(false));
+    countdownMode.addEventListener("click", () => switchMode(true));
+
+    updateDisplay();
+  </script>
 </body>
 </html>

@@ -8,8 +8,7 @@ A simple stopwatch and timer web app
 
 ## Version History
 
-### ver 2.0
+ver 2.0
 - Added timer functionality
-
-### ver 1.0
+ver 1.0
 - Implemented stopwatch with start, stop, and reset features
